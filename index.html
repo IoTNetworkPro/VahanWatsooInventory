@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VLTD Serial Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #102a43;
+      --muted: #62748a;
+      --line: #dbe4ee;
+      --surface: #ffffff;
+      --soft: #f5f8fb;
+      --brand: #0f766e;
+      --brand-dark: #134e4a;
+      --accent: #f59e0b;
+      --blue: #0ea5e9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      text-rendering: geometricPrecision;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f5f8fb 48%, #edf7f5 100%);
+      color: var(--ink);
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0 44px;
+    }
+
+    h1,
+    h2,
+    h3,
+    button,
+    label,
+    select {
+      letter-spacing: 0;
+    }
+
+    h1 {
+      line-height: 1.02;
+    }
+
+    p {
+      font-weight: 500;
+    }
+
+    input,
+    textarea,
+    select {
+      font-weight: 600;
+    }
+
+    .font-mono {
+      font-family: "JetBrains Mono", "Cascadia Mono", Consolas, monospace !important;
+    }
+
+    header {
+      min-height: auto;
+      color: var(--ink);
+    }
+
+    .vahan-logo {
+      filter: brightness(0.62) contrast(1.25) saturate(0.9);
+    }
+
+    .panel,
+    .card-panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 46px rgba(15, 42, 67, 0.09);
+    }
+
+    .card-panel {
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .card-panel:hover {
+      transform: translateY(-1px);
+      border-color: rgba(14, 165, 233, 0.36);
+      box-shadow: 0 22px 50px rgba(15, 42, 67, 0.12);
+    }
+
+    .workspace-panel {
+      overflow: hidden;
+      border-radius: 18px;
+    }
+
+    .section-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 6px;
+      height: 26px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--blue), var(--brand));
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid #cbd7e3;
+      background: #ffffff;
+      color: var(--ink);
+      outline: none;
+      box-shadow: 0 1px 2px rgba(15, 42, 67, 0.03);
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .field:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.13);
+      background: #ffffff;
+    }
+
+    .field::placeholder {
+      color: #93a4b7;
+    }
+
+    select.field {
+      cursor: pointer;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--brand-dark) 50%),
+        linear-gradient(135deg, var(--brand-dark) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) 50%,
+        calc(100% - 12px) 50%;
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+      padding-right: 40px;
+    }
+
+    .tab-btn {
+      min-height: 58px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      background: #ffffff;
+      position: relative;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+
+    .tab-btn:not(.active):hover {
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .tab-btn.active {
+      border-color: var(--brand);
+      background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%);
+      color: var(--brand-dark);
+      box-shadow: inset 0 -3px 0 var(--brand);
+    }
+
+    .action {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, var(--brand-dark), var(--brand)) !important;
+      color: #ffffff !important;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+      transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease;
+    }
+
+    .action:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+      box-shadow: 0 13px 24px rgba(15, 118, 110, 0.22);
+    }
+
+    .action:active {
+      transform: translateY(0);
+    }
+
+    .action:disabled {
+      background: #a8b5c2 !important;
+      color: #f8fafc !important;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .sample-box,
+    .helper-strip,
+    .output-card {
+      background: var(--soft) !important;
+      border: 1px solid var(--line) !important;
+      box-shadow: none;
+    }
+
+    .output-card {
+      border-left: 4px solid var(--brand) !important;
+    }
+
+    .input-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .table-scroll::-webkit-scrollbar,
+    textarea::-webkit-scrollbar {
+      width: 9px;
+      height: 9px;
+    }
+
+    .table-scroll::-webkit-scrollbar-thumb,
+    textarea::-webkit-scrollbar-thumb {
+      background: var(--brand);
+      border-radius: 999px;
+    }
+
+    .toast {
+      transform: translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      border-color: rgba(15, 118, 110, 0.24) !important;
+      background: #0f172a !important;
+      color: #ffffff !important;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 22px, 1180px);
+        padding-top: 18px;
+      }
+
+      .tab-btn {
+        min-height: 60px;
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 0.88rem;
+        line-height: 1.2;
+      }
+
+      .section-title {
+        font-size: 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="mb-7 rounded-[22px] border border-[#dbe4ee] bg-white p-5 shadow-sm sm:p-7">
+      <div class="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+        <section>
+          <img
+            src="https://vahan.parivahan.gov.in/vltdmaker/vahan/javax.faces.resource/sldlogo_header.png?ln=images"
+            alt="Vahan Homologation"
+            class="vahan-logo mb-4 h-[70px] w-auto"
+          />
+          <div id="vendorBadge" class="mb-3 inline-flex items-center gap-2 rounded-full bg-[#ecfeff] px-3 py-1 text-sm font-bold uppercase tracking-[0.18em] text-[#0f766e]">
+            WTEX vehicle device utility
+          </div>
+          <h1 class="text-4xl font-black tracking-normal text-[#102a43] sm:text-5xl">VLTD Serial Generator</h1>
+          <p class="mt-3 max-w-2xl text-base leading-7 text-[#62748a]">
+            Generate single or bulk G-column records from UID, IMEI, and ICCID values with ready-to-download TXT output.
+          </p>
+        </section>
+
+        <aside class="rounded-2xl border border-[#dbe4ee] bg-[#f5f8fb] p-5">
+          <label class="block">
+            <span class="mb-2 block text-xs font-bold uppercase tracking-widest text-[#0f766e]">Vendor ID</span>
+            <select id="vendorSelect" class="field rounded px-4 py-3 text-base font-bold">
+              <option value="WTEX">WTEX</option>
+              <option value="PT4G">PT4G</option>
+            </select>
+          </label>
+          <div class="mt-4 text-xs font-bold uppercase tracking-widest text-[#0f766e]">Generated pattern</div>
+          <div id="patternOutput" class="mt-2 rounded-xl border border-[#dbe4ee] bg-white px-3 py-2 font-mono text-base font-black text-[#102a43]">WTEXPRI + MM + YY + UID</div>
+        </aside>
+      </div>
+
+    </header>
+
+    <section class="panel workspace-panel">
+      <nav class="grid grid-cols-2 border-b border-[#dbe4ee]">
+        <button id="serialTab" class="tab-btn active px-5 text-base font-bold sm:px-8">Single-Inventory-Record</button>
+        <button id="fileTab" class="tab-btn px-5 text-base font-bold sm:px-8">Bulk-Inventory-Record</button>
+      </nav>
+
+      <div class="relative p-4 sm:p-7">
+        <section id="serialSection" class="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <form id="singleForm" class="card-panel rounded-2xl p-5 sm:p-7">
+            <div class="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h2 class="section-title text-2xl font-black text-[#102a43]">Device Information</h2>
+                <p class="mt-1 text-sm text-[#62748a]">UID is required. IMEI and ICCID are included in the TXT output.</p>
+              </div>
+              <span class="rounded-full border border-[#99f6e4] bg-[#ecfeff] px-3 py-1 text-sm font-bold text-[#0f766e]">Single</span>
+            </div>
+
+            <div class="helper-strip mb-5 rounded px-4 py-3 text-sm font-semibold">
+              Enter device identifiers and generate the inventory-ready record.
+            </div>
+
+            <div class="input-grid">
+              <label class="block">
+                <span class="mb-2 block text-sm font-bold text-[#334e68]">UID</span>
+                <input id="uid" class="field rounded-xl px-4 py-3 text-base" type="text" placeholder="Example: 20151234" autocomplete="off" />
+              </label>
+
+              <label class="block">
+                <span class="mb-2 block text-sm font-bold text-[#334e68]">IMEI</span>
+                <input id="imei" class="field rounded-xl px-4 py-3 text-base" type="text" placeholder="Example: 123456789012345" autocomplete="off" />
+              </label>
+
+              <label class="block">
+                <span class="mb-2 block text-sm font-bold text-[#334e68]">ICCID</span>
+                <input id="iccid" class="field rounded-xl px-4 py-3 text-base" type="text" placeholder="Example: 8991000000000000001" autocomplete="off" />
+              </label>
+
+              <div class="grid gap-3 pt-1 sm:grid-cols-2">
+                <button class="action rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-white" type="submit">
+                  Generate Serial
+                </button>
+                <button id="singleDownloadBtn" class="action rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-white disabled:cursor-not-allowed disabled:opacity-45" type="button" disabled>
+                  Download TXT
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <section class="card-panel rounded-2xl p-5 sm:p-7">
+            <div class="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h2 class="section-title text-2xl font-black text-[#102a43]">Output</h2>
+                <p class="mt-1 text-sm text-[#62748a]">Preview exactly what will be saved in the TXT file.</p>
+              </div>
+              <span id="singleStatus" class="rounded-full bg-[#e2e8f0] px-3 py-1 text-sm font-bold text-[#475569]">Waiting</span>
+            </div>
+
+            <div class="space-y-4">
+              <div class="output-card rounded p-5">
+                <div class="mb-2 text-xs font-bold uppercase tracking-widest text-[#0f766e]">VLTD serial number</div>
+                <div id="serialOutput" class="break-all font-mono text-xl font-black text-[#102a43]">WTEXPRI04201234</div>
+              </div>
+
+              <div class="output-card rounded p-5">
+                <div class="mb-2 text-xs font-bold uppercase tracking-widest text-[#0f766e]">Manufacturer Inventory Record</div>
+                <div id="gOutput" class="break-all font-mono text-sm leading-6 text-[#102a43]">Waiting for generation...</div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section id="fileSection" class="hidden space-y-6">
+          <section class="card-panel rounded-2xl p-5 sm:p-7">
+            <div class="mb-5 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div>
+                <h2 class="section-title text-2xl font-black text-[#102a43]">Bulk Inventory Records</h2>
+                <p class="mt-1 text-sm text-[#62748a]">Paste one device per line as UID, IMEI, ICCID or tab-separated columns.</p>
+              </div>
+              <div class="sample-box rounded-xl px-4 py-3 font-mono text-xs leading-5 text-[#102a43]">
+                20151234,123456789012345,8991000000000000001<br />
+                24081234,123456789012346,8991000000000000002
+              </div>
+            </div>
+
+            <div class="helper-strip mb-4 rounded px-4 py-3 text-sm font-semibold">
+              Paste comma, tab, or space separated inventory records.
+            </div>
+
+            <textarea id="bulkData" rows="10" class="field min-h-64 resize-y rounded p-4 font-mono text-sm leading-6" placeholder="UID,IMEI,ICCID or UID    IMEI    ICCID"></textarea>
+
+            <div class="mt-5 grid gap-3 sm:grid-cols-[auto_auto_1fr] sm:items-center">
+              <button id="bulkGenerateBtn" class="action rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-white" type="button">
+                Generate
+              </button>
+              <button id="bulkDownloadBtn" class="action rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 text-white disabled:cursor-not-allowed disabled:opacity-45" type="button" disabled>
+                Download TXT
+              </button>
+              <div id="bulkCount" class="text-sm font-semibold text-slate-400 sm:text-right">No bulk data generated yet.</div>
+            </div>
+          </section>
+
+          <section class="card-panel rounded-2xl p-5 sm:p-7">
+            <h3 class="section-title mb-4 text-2xl font-black text-[#102a43]">Inventory Output</h3>
+            <div id="bulkOutput" class="table-scroll max-h-96 space-y-3 overflow-auto rounded-xl border border-[#dbe4ee] bg-[#f5f8fb] p-3 shadow-inner">
+              <div class="rounded-xl border border-[#dbe4ee] bg-white p-4 text-sm text-[#62748a]">Bulk output will appear here.</div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast fixed bottom-5 left-1/2 z-50 w-[min(92vw,420px)] -translate-x-1/2 rounded-2xl border border-teal-300/25 bg-slate-950/95 px-5 py-4 text-center text-sm font-bold text-teal-100 shadow-2xl"></div>
+
+  <script>
+    let currentG = "";
+    let bulkGData = [];
+
+    const elements = {
+      serialTab: document.getElementById("serialTab"),
+      fileTab: document.getElementById("fileTab"),
+      serialSection: document.getElementById("serialSection"),
+      fileSection: document.getElementById("fileSection"),
+      singleForm: document.getElementById("singleForm"),
+      vendorSelect: document.getElementById("vendorSelect"),
+      vendorBadge: document.getElementById("vendorBadge"),
+      patternOutput: document.getElementById("patternOutput"),
+      uid: document.getElementById("uid"),
+      imei: document.getElementById("imei"),
+      iccid: document.getElementById("iccid"),
+      serialOutput: document.getElementById("serialOutput"),
+      gOutput: document.getElementById("gOutput"),
+      singleStatus: document.getElementById("singleStatus"),
+      singleDownloadBtn: document.getElementById("singleDownloadBtn"),
+      bulkData: document.getElementById("bulkData"),
+      bulkGenerateBtn: document.getElementById("bulkGenerateBtn"),
+      bulkDownloadBtn: document.getElementById("bulkDownloadBtn"),
+      bulkOutput: document.getElementById("bulkOutput"),
+      bulkCount: document.getElementById("bulkCount"),
+      toast: document.getElementById("toast")
+    };
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        elements.toast.classList.remove("show");
+      }, 2200);
+    }
+
+    function setActiveTab(tabName) {
+      const isSerial = tabName === "serial";
+      elements.serialSection.classList.toggle("hidden", !isSerial);
+      elements.fileSection.classList.toggle("hidden", isSerial);
+      elements.serialTab.classList.toggle("active", isSerial);
+      elements.fileTab.classList.toggle("active", !isSerial);
+    }
+
+    function getSelectedVendor() {
+      return elements.vendorSelect.value;
+    }
+
+    function updateVendorPreview() {
+      const vendor = getSelectedVendor();
+      elements.vendorBadge.textContent = `${vendor} vehicle device utility`;
+      elements.patternOutput.textContent = `${vendor}PRI + MM + YY + UID`;
+      elements.serialOutput.textContent = `${vendor}PRI04201234`;
+      currentG = "";
+      bulkGData = [];
+      elements.gOutput.textContent = "Waiting for generation...";
+      elements.singleStatus.textContent = "Waiting";
+      elements.singleStatus.className = "rounded-full bg-[#e2e8f0] px-3 py-1 text-sm font-bold text-[#475569]";
+      elements.singleDownloadBtn.disabled = true;
+      elements.bulkDownloadBtn.disabled = true;
+      elements.bulkCount.textContent = "No bulk data generated yet.";
+      elements.bulkOutput.innerHTML = '<div class="rounded-xl border border-[#dbe4ee] bg-white p-4 text-sm text-[#62748a]">Bulk output will appear here.</div>';
+    }
+
+    function processUID(uid, imei = "", iccid = "", vendor = "WTEX") {
+      const cleanedUid = String(uid).trim();
+      const year = cleanedUid.substring(0, 2);
+      const week = cleanedUid.substring(2, 4);
+      const remaining = cleanedUid.substring(4);
+      let month = Math.ceil(parseInt(week || "1", 10) / 4);
+
+      if (Number.isNaN(month) || month < 1) month = 1;
+      if (month > 12) month = 12;
+
+      const monthText = month.toString().padStart(2, "0");
+      const serial = `${vendor}PRI${monthText}${year}${remaining}`;
+      const dateValue = `${monthText}/2019`;
+      const g = `${vendor}|${serial}|${imei.trim()}|${iccid.trim()}|${dateValue}|199`;
+
+      return { serial, g };
+    }
+
+    function downloadTXT(content, filename) {
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function generateSerial() {
+      const uid = elements.uid.value.trim();
+
+      if (!uid) {
+        showToast("Please enter UID");
+        elements.uid.focus();
+        return;
+      }
+
+      const result = processUID(uid, elements.imei.value, elements.iccid.value, getSelectedVendor());
+      currentG = result.g;
+      elements.serialOutput.textContent = result.serial;
+      elements.gOutput.textContent = result.g;
+      elements.singleStatus.textContent = "Ready";
+      elements.singleStatus.className = "rounded-full bg-[#dcfce7] px-3 py-1 text-sm font-bold text-[#166534]";
+      elements.singleDownloadBtn.disabled = false;
+      showToast("Serial generated successfully");
+    }
+
+    function generateBulk() {
+      const bulkData = elements.bulkData.value.trim();
+
+      if (!bulkData) {
+        showToast("Please paste bulk data");
+        elements.bulkData.focus();
+        return;
+      }
+
+      const lines = bulkData.split(/\r?\n/);
+      const fragment = document.createDocumentFragment();
+      bulkGData = [];
+
+      lines.forEach((line, index) => {
+        const [uid = "", imei = "", iccid = ""] = line.split(/[,\t ]+/).map((part) => part.trim());
+
+        if (uid.length >= 6) {
+          const result = processUID(uid, imei, iccid, getSelectedVendor());
+          bulkGData.push(result.g);
+
+          const row = document.createElement("div");
+          row.className = "rounded-xl border border-[#dbe4ee] bg-white p-4 font-mono text-sm leading-6 text-[#102a43]";
+          row.textContent = result.g;
+          fragment.appendChild(row);
+          return;
+        }
+
+        if (line.trim()) {
+          const row = document.createElement("div");
+          row.className = "rounded-xl border border-[#fde68a] bg-[#fffbeb] p-4 text-sm font-semibold text-[#92400e]";
+          row.textContent = `Skipped line ${index + 1}: UID must contain at least 6 characters.`;
+          fragment.appendChild(row);
+        }
+      });
+
+      elements.bulkOutput.innerHTML = "";
+      elements.bulkOutput.appendChild(fragment);
+      elements.bulkDownloadBtn.disabled = bulkGData.length === 0;
+      elements.bulkCount.textContent = bulkGData.length
+        ? `${bulkGData.length} serial${bulkGData.length === 1 ? "" : "s"} generated.`
+        : "No valid serials generated.";
+
+      showToast(`${bulkGData.length} serial${bulkGData.length === 1 ? "" : "s"} generated successfully`);
+    }
+
+    elements.serialTab.addEventListener("click", () => setActiveTab("serial"));
+    elements.fileTab.addEventListener("click", () => setActiveTab("file"));
+    elements.vendorSelect.addEventListener("change", updateVendorPreview);
+    elements.singleForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      generateSerial();
+    });
+    elements.singleDownloadBtn.addEventListener("click", () => {
+      if (!currentG) {
+        showToast("Please generate serial first");
+        return;
+      }
+
+      downloadTXT(currentG, "vltd_g_data.txt");
+      showToast("TXT download started");
+    });
+    elements.bulkGenerateBtn.addEventListener("click", generateBulk);
+    elements.bulkDownloadBtn.addEventListener("click", () => {
+      if (bulkGData.length === 0) {
+        showToast("Please generate bulk serials first");
+        return;
+      }
+
+      downloadTXT(bulkGData.join("\n"), "vltd_bulk_g_data.txt");
+      showToast("Bulk TXT download started");
+    });
+  </script>
+</body>
+</html>
